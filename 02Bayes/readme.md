@@ -1,7 +1,7 @@
 <font size=6>贝叶斯分类器</font>
 
 内容与代码来源自：Python与机器学习实战（何宇健）作者git [repo](https://github.com/carefree0910/MachineLearning)
-我的git [repo]()
+我的git [repo](https://github.com/busyyang/Python_and_ML)
 # 理论
 贝叶斯决策理论和传统统计学理论有区别，最大的区别在于对于概率的定义：
  - 统计学的频率强调“自然属性”，认为应该使用事件在重复试验中发生的频率最为其发生的概率的估计；
