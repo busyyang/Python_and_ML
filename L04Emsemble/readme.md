@@ -34,3 +34,94 @@ Bagging就是Bootstrap Aggregating，处理方法为：
  - 最终模型就是这M个弱分类器的简单组合。
 
 如果$k=d$，那么这样训练的决策树和一般决策树是一样的。如果$k=1$,生成决策树时候的每一步都是随机的。一般建议$k=\log_2d$。
+
+### 随机森林的编程实现
+由于随机森林可以看做是决策树的累加实现的，所以可以先直接把[决策树的代码](https://github.com/busyyang/Python_and_ML/tree/master/L03DT)拷贝过来，主要是Node.py, Tree.py,  Cluster.py。
+
+~~~py
+from Tree import *
+from Bases import ClassifierBase
+from Util import DataUtil
+from ProgressBar import ProgressBar
+
+
+def rf_task(args):
+    x, trees, n_cores = args
+    return [tree.predict(x, n_cores=n_cores) for tree in trees]
+
+class RandomForest(ClassifierBase):
+    cvd_trees = {
+        "ID3": ID3Tree,
+        "C45": C45Tree,
+        "Cart": CartTree
+    }
+
+    def __init__(self, **kwargs):
+        super(RandomForest, self).__init__(**kwargs)
+        self._tree, self._trees = "", []
+
+        self._params["tree"] = kwargs.get("tree", "Cart")
+        self._params["epoch"] = kwargs.get("epoch", 10)
+        self._params["feature_bound"] = kwargs.get("feature_bound", "log")
+
+    @property
+    def title(self):
+        return "Tree: {}; Num: {}".format(self._tree, len(self._trees))
+
+    @staticmethod
+    def most_appearance(arr):
+        u, c = np.unique(arr, return_counts=True)
+        return u[np.argmax(c)]
+
+    def fit(self, x, y, sample_weight=None, tree=None, epoch=None, feature_bound=None, **kwargs):
+        if sample_weight is None:
+            sample_weight = self._params["sample_weight"]
+        if tree is None:
+            tree = self._params["tree"]
+        if epoch is None:
+            epoch = self._params["epoch"]
+        if feature_bound is None:
+            feature_bound = self._params["feature_bound"]
+        x, y = np.atleast_2d(x), np.asarray(y)
+        n_sample = len(y)
+        self._tree = tree
+        bar = ProgressBar(max_value=epoch, name="RF")
+        for _ in range(epoch):
+            tmp_tree = RandomForest.cvd_trees[tree](**kwargs)
+            indices = np.random.randint(n_sample, size=n_sample)
+            if sample_weight is None:
+                local_weight = None
+            else:
+                local_weight = sample_weight[indices]
+                local_weight /= local_weight.sum()
+            tmp_tree.fit(x[indices], y[indices], sample_weight=local_weight, feature_bound=feature_bound)
+            self._trees.append(deepcopy(tmp_tree))
+            bar.update()
+
+    def predict(self, x, get_raw_results=False, bound=None, **kwargs):
+        trees = self._trees if bound is None else self._trees[:bound]
+        matrix = self._multi_clf(x, trees, rf_task, kwargs, target=kwargs.get("target", "parallel"))
+        return np.array([RandomForest.most_appearance(rs) for rs in matrix])
+
+    def evaluate(self, x, y, metrics=None, tar=0, prefix="Acc", **kwargs):
+        kwargs["target"] = "single"
+        super(RandomForest, self).evaluate(x, y, metrics, tar, prefix, **kwargs)
+~~~
+RandomForest继承自ClassifierBase，主要定义了一些常用的类的属性。[原作者的代码的Bases.py](https://github.com/carefree0910/MachineLearning/blob/master/Util/Bases.py)的ClassifierBase中，直接运行会报错，因为强行将将结果p和e这样的字符串转化为float32。可以直接将`dtype=np.float32`去掉。
+
+~~~py
+    @staticmethod
+    def _multi_clf(x, clfs, task, kwargs, stack=np.vstack, target="single"):
+        if target != "parallel":
+          return np.array([clf.predict(x) for clf in clfs], dtype=np.float32).T #去掉, dtype=np.float32 
+~~~
+或者改为
+~~~py
+    @staticmethod
+    def _multi_clf(x, clfs, task, kwargs, stack=np.vstack, target="single"):
+        if target != "parallel":
+            try:
+                return np.array([clf.predict(x) for clf in clfs], dtype=np.float32).T
+            except Exception:
+                return np.array([clf.predict(x) for clf in clfs], dtype=np.str_).T
+~~~

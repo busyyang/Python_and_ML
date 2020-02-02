@@ -75,5 +75,5 @@ $$g_{Gini}(y,A_{jp})=Gini(y)-Gini(y|A_{jp})$$来计算第$j$维特征在二分�
 $$(j^*,p^*)=\arg \underset{j,p}{\max}g_{Gini}(y,A_{jp})$$回归问题暂且不表。
 
 # 代码实现
-参考git [repo:Python_and_ML:03DT](https://github.com/busyyang/Python_and_ML/tree/master/03DT)
+参考git [repo:Python_and_ML:03DT](https://github.com/busyyang/Python_and_ML/tree/master/L03DT)
 
