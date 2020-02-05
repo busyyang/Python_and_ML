@@ -149,3 +149,5 @@ $$x_i\in \bold{X} \subseteq \bold{R^N},y_i\in \bold{Y}\subseteq \{-1,+1\}$$AdaBo
    $$f(x)=\sum_{k=1}^N\alpha_kg_k(x)$$
 
 输出：最终分类器$g(x)$：$$g(x)=sign(f(x))=sign(\sum_{k=1}^M\alpha_kg_k(x))$$
+
+代码参考：git [repo:Python_and_ML:L04Emsemble](https://github.com/busyyang/Python_and_ML/tree/master/L04Emsemble)
