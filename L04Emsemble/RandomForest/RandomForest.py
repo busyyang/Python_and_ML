@@ -76,7 +76,7 @@ if __name__ == '__main__':
 
     train_num = 100
     (x_train, y_train), (x_test, y_test) = DataUtil.get_dataset(
-        "mushroom", "data/mushroom.txt", n_train=train_num, tar_idx=0)
+        "mushroom", "../data/mushroom.txt", n_train=train_num, tar_idx=0)
 
     learning_time = time.time()
     forest = RandomForest()

@@ -125,3 +125,27 @@ RandomForest继承自ClassifierBase，主要定义了一些常用的类的属性
             except Exception:
                 return np.array([clf.predict(x) for clf in clfs], dtype=np.str_).T
 ~~~
+其他代码参考：git [repo:Python_and_ML:L04Emsemble](https://github.com/busyyang/Python_and_ML/tree/master/L04Emsemble)
+
+
+# AdaBoost
+AdaBoost要解决的问题是：
+ - 如何根据弱模型的表现更新训练集的权重；
+ - 如何根据弱模型的表现决定弱模型的话语权。
+
+假设有一个二分类数据集：
+$$D=\{(x_1,y_1),...,(x_n,y_n)\}$$每个样本都是由实例$x_i$和类别$y_i$组成，且：
+$$x_i\in \bold{X} \subseteq \bold{R^N},y_i\in \bold{Y}\subseteq \{-1,+1\}$$AdaBoost会使用如下方法从训练集中训练一系列的弱分类器，并且集成为一个强分类器：
+输入：训练数据(包含N条数据)，弱学习算法及对应的弱分类器，迭代次数M
+1. 初始化训练数据的权值分布：$$W_0=(w_{01},...,w_{0N})$$
+2. 对$k=0,1,...,M-1$:
+   1. 使用权值分布为$W_k$的训练数据集训练弱分类器$$g_{k+1}(x):X\rightarrow {-1,+1}$$
+   2. 计算$g_{k+1}(x)$在训练集上的加权错误率：$$e_{k+1}=\sum_{i=1}^Nw_{ki}I(g_{k+1}(x_i)\neq y_i)$$
+   3. 根据加权错误率计算$g_{k+1}(x)$的话语权；$$\alpha _{k+1}=\frac{1}{2}\ln \frac{1-e_{k+1}}{e_{k+1}}$$
+   4. 根据$g_{k+1}(x)$的表现更新训练集的权值分布，被$g_{k+1}(x)$误分的样本($y_ig_{k+1}(x_i)<0$的样本)要相对地（以$e^{\alpha_{k+1}}为比例$）增大其权重，反之则要（以$e^{-\alpha_{k+1}}为比例$）减少其权重；$$W_{k+1,i}=\frac{W_{ki}}{Z_k}·\exp{(-\alpha_{k+1}y_ig_{k+1}(x_i))}\\W_{k+1}=(W_{k+1,1},...,W_{k+1,N})$$这里的$Z_k$是规范化因子，
+   $$Z_k=\sum_{i=1}^Nw_{ki}·\exp{(-\alpha_{k+1}y_ig_{k+1}(x_i))}$$
+   作用是将$W_{k+1}$归一化为概率分布。
+3. 加权集成：
+   $$f(x)=\sum_{k=1}^N\alpha_kg_k(x)$$
+
+输出：最终分类器$g(x)$：$$g(x)=sign(f(x))=sign(\sum_{k=1}^M\alpha_kg_k(x))$$
