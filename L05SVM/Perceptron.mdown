@@ -1,0 +1,26 @@
+<font size=6>感知器</font>
+
+感知器只能处理线性可分的问题，所谓线性可分问题就是：对于一个数据集$D=\{(x_1,y_1),...,(x_n,y_n)\}$,其中$x_i\in \bold{X}\subseteq\mathbb{R^n} ,y_i\in\{-1,+1\}$.如果存在一个超平面$\Pi$能够将D中的正负样本点精确地划分到$\Pi$的两侧，即：
+$$\exist\Pi:w·x+b=0$$使得：
+$$w·x_i+b<0(\forall y_i=-1)\\w·x_i+b>0(\forall y_i=+1)$$当$n=2$，也就是数据集可以被一条直线精确划分到两边。当$n=3$表示，数据集能被一个三维空间的平面精确划分开。对于一个数学问题，找一个超平面不是一个很好的描述，可以把这个问题转化为一个损失函数最小化的过程。考虑到$\Pi$的特性，损失函数的定义非常简单:
+$$\mathbb{L(w,b,x,y)}=-\sum_{x_i\in E}y_i(w·x_i+b)$$这里E是当前被误分类的点集，即$\exist x_i\in E$:
+$$w·x_i+b\geqslant0,if(y_i=-1)\\w·x_i+b\leqslant0,if(y_i=+1)$$所以损失函数也可以写成：
+$$\mathbb{L(w,b,x,y)}=\sum_{x_i\in E}|w·x_i+b|$$$|w·x_i+b|$能相对地表示向量$x_i$到超平面$w·x_i+b=0$的距离，损失函数的几何解释就是：损失函数值=所有被误分类样本点到超平面的距离和。如果超平面将所有的样本点正确分类，那么损失函数值就是0。
+
+感知器的损失函数最小化使用的是**梯度下降法**。简单来用随机梯度下降法来说明一下：
+$$\begin{array}{c}\frac{\partial L(w,b,x_i,y_i)}{\partial w}=\left\{\begin{array}{l}\begin{array}{cc}0,&(x_i,y_i)\not\in E\end{array}\\\begin{array}{cc}-y_ix_i,&(x_i,y_i)\in E\end{array}\end{array}\right.\\\frac{\partial L(w,b,x_i,y_i)}{\partial b}=\left\{\begin{array}{l}\begin{array}{cc}0,&(x_i,y_i)\not\in E\end{array}\\\begin{array}{cc}-y_i,&(x_i,y_i)\in E\end{array}\end{array}\right.\end{array}$$所以感知器算法的**流程**：
+**输入：** 训练集$D=\{(x_1,y_1),...,(x_n,y_n)\}$，迭代次数M,学习率$\alpha$,其中：$$x_i\in \bold{X}\subseteq\mathbb{R^n} ,y_i\in\{-1,+1\}$$(1) 初始化参数：
+$$w=(0,...,0)^T\in \mathbb{R^N},b=0$$(2)对$j=1,...,M$:
+$$E=\{(x_i,y_i)|y_i(w·x_i+b) \leqslant 0\}$$（a）若$E=\empty$,表示没有错误分类，退出
+（b）否则，任取E中的一个样本点$(x_i,y_i)$并利用他更新参数：
+$$w\leftarrow w+\alpha y_ix_i\\b\leftarrow b+\alpha y_i$$**输出**：感知器模型$g(x)=sign(f(x))=sign(w·x+b)$
+算法中最核心的就是梯度下降过程：
+$$w\leftarrow w+\alpha y_ix_i\\b\leftarrow b+\alpha y_i$$我们可以将参数表示为样本点的线性组合，假设样本点$(x_i,y_i)$在处理过程中被使用了$n_i$次(初始化：$w=(0,...,0)^T\in \mathbb{R^N},b=0$),那么：
+$$w=\alpha\sum_{i=1}^Nn_iy_ix_i\\b=\alpha\sum_{i=1}^Nn_iy_i$$进一步假设$\alpha_i=\alpha n_i$,所以：
+$$w=\sum_{i=1}^N\alpha_iy_ix_i\\b=\sum_{i=1}^N\alpha_iy_i$$这就是感知器的对偶算法：
+**输入**：训练集$D=\{(x_1,y_1),...,(x_n,y_n)\}$，迭代次数M,学习率$\alpha$,其中：$$x_i\in \bold{X}\subseteq\mathbb{R^n} ,y_i\in\{-1,+1\}$$(1) 初始化参数：
+$$\alpha=(\alpha_1,...,\alpha_N)^T=(0,...,0)^T\in \mathbb{R^N}$$(2)对$j=1,...,M$:
+$$E=\{(x_i,y_i)|y_i(\sum_{k=1}^N\alpha_ky_k(x_k·x_i+1))\leqslant 0\}$$（a）若$E=\empty$,表示没有错误分类，退出
+（b）否则，任取E中的一个样本点$(x_i,y_i)$并利用他更新参数：
+$$\alpha_i\leftarrow\alpha_i+学习率$$**输出**：感知器模型$g(x)=sign(f(x))=sign(\sum_{k=1}^N\alpha_ky_k(x_k·x_i+1))$对偶形式里面，样本$x$仅以内积$(x_k·x_i)$的形式出现，在训练过程中，会重复大量使用到样本点之间的内积，通常可以将内积计算并存储在一个矩阵中，也就是Gram矩阵：
+$$G=(x_k·x_i)_{N\times N}$$
