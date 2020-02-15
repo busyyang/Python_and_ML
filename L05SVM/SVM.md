@@ -60,6 +60,7 @@ $$0\leqslant\alpha_i\leqslant C$$假设对偶形式的解为:$\alpha^*=(\alpha_1
 $$\begin{array}{l}
     w^*=\sum_{i=1}^N\alpha^*_iy_ix_i \\ b^*=y_j-\sum_{i=1}^N\alpha^*_iy_i(x_i·x_j)
 \end{array}$$其中$b^*$中出现的$j$是满足$0\leqslant\alpha_i\leqslant C$的下标。
+
 训练过程从略，书中作者的代码耦合度太高，在[Jack Cui](https://cuijiahua.com/blog/2017/11/ml_8_svm_1.html)的博客上找到一份清晰的代码：
 
 ~~~python
@@ -520,3 +521,15 @@ def showDataSet(dataMat, labelMat):
 if __name__ == '__main__':
     testRbf()
 ~~~
+
+
+# 多分类
+## 一对多方法（One-vs-Rest,OvR）
+对于K类问题，训练K个二分类模型$\{G_1,...,G_K\}$，其中，模型$G_i$在训练时候，只识别第i类标签，其他类别都认为是负样本。训练好K个模型时候，直接输出最大的对应的类别标签：
+$$y_{pred}=\arg\underset{i}{\max}G_i(x)$$这样在训练时候，会样本不均衡，一般都在负样本中取一部分来训练，而不是用负样本的全部。
+
+## 一对一方法(One-vs-One,OvO)
+对于一个k类问题，直接训练$\frac{K(K-1)}{2}$个二分类模型$\{G_{12},G_{13},...,G_{1K},G_{23},G_{24},...,G_{2K},...,G_{K-1,K}\}$，每个模型都只接受两类样本的训练，训练的结果标签只需要$\{-1,+1\}$,即可投票即可，那么所有模型训练好了，只需要让所有模型投票，就可以确定多分类的结果。
+
+## 有向无环图方法(Directed Acyclic Graph Method,DAG)
+DAG训练过程与OvO是一样的，只是区别于最后的决策过程。
